@@ -10,17 +10,17 @@
 
 Per row, daily granularity:
 
-| Column | Type | Notes |
-|---|---|---|
-| `date` | daily | ~5 yrs of history (2019-12 onward), 20 properties, ~400k rows |
-| `zipcode`, `city` | geo | proxy for climate zone + regional building stock |
-| `energysource` | categorical | in the sample almost entirely `Erdgas` (natural gas) |
-| `energyusage [kWh]` | target | per room per day |
-| `livingspace [m²]` | property attr | per unit |
-| `mean outside temperature [°C]` | exogenous | daily mean only — no intraday |
-| `roomnumber` | id | row is per-room — not per-unit |
-| `emission factor [g/kWh]` | multiplier | source-dependent |
-| `unitnumber` | id | flat within the building |
+| Column                             | Type          | Notes                                                         |
+| ---------------------------------- | ------------- | ------------------------------------------------------------- |
+| `date`                           | daily         | ~5 yrs of history (2019-12 onward), 20 properties, ~400k rows |
+| `zipcode`, `city`              | geo           | proxy for climate zone + regional building stock              |
+| `energysource`                   | categorical   | in the sample almost entirely `Erdgas` (natural gas)        |
+| `energyusage [kWh]`              | target        | per room per day                                              |
+| `livingspace [m²]`              | property attr | per unit                                                      |
+| `mean outside temperature [°C]` | exogenous     | daily mean only — no intraday                                |
+| `roomnumber`                     | id            | row is per-room — not per-unit                               |
+| `emission factor [g/kWh]`        | multiplier    | source-dependent                                              |
+| `unitnumber`                     | id            | flat within the building                                      |
 
 ### 1.2 What's missing (this is the interesting part)
 
@@ -38,16 +38,16 @@ This framing — "we'll start with what you're comfortable sharing, infer the re
 
 The CSV has `zipcode` + `city` for every row. That unlocks a lot:
 
-| Source | What it gives us | How we use it |
-|---|---|---|
-| **Meteostat / DWD** | Hourly temp, humidity, wind, solar radiation, cloud cover | HDD, forecast horizon up to 14 days, solar gain proxy |
-| **Zensus 2022 (DE)** | Avg household size per zipcode, % of buildings by age band, ownership rates | Prior for household size if the tenant doesn't tell us |
-| **BBSR building-typology** | German residential building typology (EFH/MFH, construction era, typical U-values) | Prior for insulation class |
-| **Tabula/Episcope** | Energy reference values per building era × type | Benchmark "what a typical 1970s MFH in this climate zone should consume" |
-| **Netztransparenz / ENTSO-E** | Grid mix + real emission factor for electricity | Dynamic CO2, not a static number |
-| **Gas/heat tariff feeds** | €/kWh trajectory, futures curve | Cost forecast with uncertainty bands |
-| **Elevation (SRTM / Open-Elevation)** | m above sea level | Temperature adjustment per tech spec |
-| **Sun path (pvlib)** | Azimuth, daylight hours | Passive solar contribution estimate |
+| Source                                      | What it gives us                                                                   | How we use it                                                            |
+| ------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Meteostat / DWD**                   | Hourly temp, humidity, wind, solar radiation, cloud cover                          | HDD, forecast horizon up to 14 days, solar gain proxy                    |
+| **Zensus 2022 (DE)**                  | Avg household size per zipcode, % of buildings by age band, ownership rates        | Prior for household size if the tenant doesn't tell us                   |
+| **BBSR building-typology**            | German residential building typology (EFH/MFH, construction era, typical U-values) | Prior for insulation class                                               |
+| **Tabula/Episcope**                   | Energy reference values per building era × type                                   | Benchmark "what a typical 1970s MFH in this climate zone should consume" |
+| **Netztransparenz / ENTSO-E**         | Grid mix + real emission factor for electricity                                    | Dynamic CO2, not a static number                                         |
+| **Gas/heat tariff feeds**             | €/kWh trajectory, futures curve                                                   | Cost forecast with uncertainty bands                                     |
+| **Elevation (SRTM / Open-Elevation)** | m above sea level                                                                  | Temperature adjustment per tech spec                                     |
+| **Sun path (pvlib)**                  | Azimuth, daylight hours                                                            | Passive solar contribution estimate                                      |
 
 Keying everything off `zipcode` means we can offer **"vs. peers in your area with the same m²"** from day one, no tenant input required.
 
@@ -97,7 +97,7 @@ Answers 1–2 alone let us replace the zipcode-level prior with a household-leve
 
 ```
     ┌─────────────────────────────────────────────┐
-    │  L3  Tenant-level online learner (per unit) │  — adapts over 10 yrs
+    │  L3  Tenant-level online learner (per unit) with the ability to go deeper for each room inside the unit│  — adapts over 10 yrs
     ├─────────────────────────────────────────────┤
     │  L2  Building-level batch model             │  — thermal signature, envelope
     ├─────────────────────────────────────────────┤
@@ -111,12 +111,12 @@ Answers 1–2 alone let us replace the zipcode-level prior with a household-leve
 
 ### 4.2 Concrete model choices (not one, a ladder)
 
-| Stage | Model | Why |
-|---|---|---|
-| Day-0 baseline | **LightGBM / XGBoost** on tabular features | Beats LSTMs on sparse tabular with <1M rows; trains in seconds |
-| Seasonal accuracy | **Prophet or NeuralProphet** per unit | Handles yearly + weekly seasonality with interpretable components |
-| Long-horizon | **Temporal Fusion Transformer (TFT)** | Attention over static + known-future + unknown-past; gives per-feature importance out of the box → feeds explanations |
-| Online adaptation | **Bayesian ridge / Kalman filter on TFT residuals** | Cheap per-tenant update, doesn't need retraining the TFT |
+| Stage             | Model                                                     | Why                                                                                                                    |
+| ----------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Day-0 baseline    | **LightGBM / XGBoost** on tabular features          | Beats LSTMs on sparse tabular with <1M rows; trains in seconds                                                         |
+| Seasonal accuracy | **Prophet or NeuralProphet** per unit               | Handles yearly + weekly seasonality with interpretable components                                                      |
+| Long-horizon      | **Temporal Fusion Transformer (TFT)**               | Attention over static + known-future + unknown-past; gives per-feature importance out of the box → feeds explanations |
+| Online adaptation | **Bayesian ridge / Kalman filter on TFT residuals** | Cheap per-tenant update, doesn't need retraining the TFT                                                               |
 
 Start with LightGBM + Prophet. Only climb the ladder if results plateau. A well-tuned LightGBM with HDD, lags, and tenant one-hot often matches an LSTM and is 100× faster to iterate on.
 
@@ -216,10 +216,16 @@ Everything past step 5 is a UX investment, not a modeling one. That's deliberate
 
 ---
 
-## 8. Open questions to resolve with the team
+## 8. Open questions to resolve with the team - I ADDED ANSWERED TO THEM
 
 - Do we have any *multi-source* buildings in the 20 properties, or is it all `Erdgas`? (affects whether energy-source modeling is useful or decorative)
+  - we have actually multple sources, Fernwärme, Erdgas, Heizöl
 - Is room-level billing actually how Techem operates, or is per-unit the real product unit? (affects whether room-level forecasts are a feature or a curiosity)
+  - the billing actually goes per unit. but we wanna also show after we click "dig deeper" to show room specific data: so it shows the costs and usage and efficiency per room, make sure to make use of the columns provided in the dataset for each property containing many rooms
+    date	zipcode	energysource	city	energyusage [kWh]	livingspace [m²]	mean outside temperature [°C]	roomnumber	emission factor [g/kWh]	unitnumber
 - Are we allowed to hit external APIs live in the demo, or should we pre-cache weather? (latency + reliability tradeoff)
+  - Yes please hit external APIs, tell me how do i provide them for you
+  - and also in the data set we have these informations to use mean outside temperature [°C] and emission factor [g/kWh] and unitnumber so make use of them
 - Target platform for the demo: browser only, or do they want a mobile view?
-- Language: German-first with English toggle? Tenants will be German.
+  - we'll keep it simple for the hackathon as browser only - mobile view is actually the goal
+- Language: English
