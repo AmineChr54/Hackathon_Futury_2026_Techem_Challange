@@ -1,0 +1,40 @@
+Act as an expert UX/UI Designer and React Developer specializing in gamified, habit-forming applications (like Duolingo or Headspace). Build a two-screen interactive prototype for the "Rewards" section of an energy-saving app. The aesthetic should be modern, clean, playful, and highly satisfying to interact with. Use Tailwind CSS for styling and Framer Motion (or equivalent CSS animations) for buttery-smooth micro-interactions.
+
+### The Core Concept
+Users save money by reducing their heating consumption. Instead of just showing them a boring "Euros saved" metric, we translate those savings into tangible real-world rewards using a digital "Stamp Card" system. Every time the app detects a good energy habit, they earn a stamp. 
+
+### Screen 1: The Goal Setup (Onboarding)
+- **Headline:** "What are we saving for? 🎯"
+- **Subheadline:** "Pick a goal. We'll turn your daily heating savings into real rewards."
+- **Layout:** A responsive grid of 4 beautifully designed cards. 
+- **The 4 Goal Options (Tiers):**
+  1. **Tier 1 (Easy - 30€):** "The Premium T-Shirt" (Takes ~10 stamps to reach)
+  2. **Tier 2 (Medium - 80€):** "Tapas Night with Friends" (Takes ~25 stamps to reach)
+  3. **Tier 3 (Hard - 250€):** "New E-Scooter Fund" (Takes ~80 stamps to reach)
+  4. **Tier 4 (Epic - 1000€):** "Bali Vacation Fund" (Takes ~300 stamps to reach)
+- **Interaction:** When a user clicks a card, it should scale up slightly, show a glowing border, and a "Start My Journey" button should slide in from the bottom. Clicking the button transitions them to Screen 2.
+
+### Screen 2: The Digital Stamp Card (The Habit Loop)
+This is the core dashboard where the user gets their dopamine hit.
+- **Top Section (The Goal Tracker):** - Display the chosen goal icon and name.
+  - Show a sleek, animated progress bar (e.g., "12€ / 80€ saved"). 
+- **Middle Section (The Stamp Card):**
+  - Design a digital loyalty card that holds 10 empty "Stamp Slots" (circles). 
+  - Each stamp represents roughly 3€ in energy savings.
+  - Below the card, show how many "Total Stamps" they have earned overall for their goal.
+- **Bottom Section (The Action / Simulator):**
+  - Create a large, inviting, primary button that says: "Simulate Good Energy Day 🌿". 
+  - (In the real app, this will be triggered automatically by smart meters, but we need this button for the prototype).
+
+### The Micro-Interactions & "Hooking" Details (CRITICAL)
+To make the app feel satisfying, implement these specific effects when the user clicks the "Simulate Good Energy Day" button:
+1. **The Stamp Animation:** An icon (like a green leaf or a flame with a slash through it) should dynamically "stamp" into the next available empty slot on the card with a satisfying pop or bounce animation.
+2. **The Fill-Up:** If the user fills all 10 slots on the card, trigger a mini-celebration (e.g., a burst of confetti using canvas-confetti, or a glowing screen flash). 
+3. **Card Refresh:** After the celebration, clear the 10 slots (resetting the visual card) so they can start filling the next one, but make sure the main Progress Bar at the top keeps growing toward the final financial goal.
+4. **Haptic/Visual Feedback:** Every click should feel tactile. Buttons should depress slightly on click. 
+
+### Technical Requirements
+- Build this as a functional, interactive Single Page App.
+- Use `useState` to track the selected goal, the total money saved, the total stamps, and the current active slots on the card.
+- Ensure the math checks out: 1 Stamp = 3€. If they click the button, add 1 stamp to the card and 3€ to the progress bar.
+- Make sure it looks flawless on mobile screens.
