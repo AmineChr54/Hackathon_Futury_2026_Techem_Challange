@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Teco } from "@/components/Teco";
 import { tenantToday as mockTenantToday, badges } from "@/lib/mockData";
 import { useUnitContext } from "@/lib/unitContext";
-import { useTargetMutation, useToday, useForecast } from "@/hooks/useApi";
+import { useTargetMutation, useToday, useForecast, useHistory } from "@/hooks/useApi";
 import { todayToView } from "@/lib/adapters";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -101,9 +101,37 @@ const Budget = () => {
   const { selectedPid, selectedUid } = useUnitContext();
   const todayQ = useToday(selectedPid, selectedUid);
   const forecastQ = useForecast(selectedPid, selectedUid, 30);
+  const historyQ = useHistory(selectedPid, selectedUid, 90);
   const targetMut = useTargetMutation(selectedPid, selectedUid);
   const tenantToday = todayToView(todayQ.data, forecastQ.data, mockTenantToday);
   const predicted = tenantToday.predictedMonthCostEur || 100;
+
+  // Last complete calendar month cost from history series.
+  const lastMonthCost = (() => {
+    const series = historyQ.data?.series;
+    if (!series || !series.length) return null;
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const m = now.getUTCMonth();
+    const prevY = m === 0 ? y - 1 : y;
+    const prevM = m === 0 ? 11 : m - 1;
+    let sum = 0;
+    let count = 0;
+    for (const p of series) {
+      const d = new Date(p.date);
+      if (d.getUTCFullYear() === prevY && d.getUTCMonth() === prevM) {
+        sum += p.cost_eur;
+        count++;
+      }
+    }
+    return count > 0 ? Math.round(sum) : null;
+  })();
+
+  // Dynamic slider bounds from predicted cost, rounded to nearest 5.
+  const roundTo5 = (n: number) => Math.max(5, Math.round(n / 5) * 5);
+  const sliderMin = roundTo5(predicted * 0.5);
+  const sliderMax = roundTo5(predicted * 1.5);
+  const sliderMid = roundTo5(predicted);
 
   const plan = planByMode[mode];
   // Server-driven feasibility once a target is set; fallback to a heuristic.
@@ -206,7 +234,7 @@ const Budget = () => {
         </div>
         <div className="mt-2 flex items-center justify-between">
           <button
-            onClick={() => handleBudgetChange(Math.max(20, budget - 5))}
+            onClick={() => handleBudgetChange(Math.max(sliderMin, budget - 5))}
             className="grid h-10 w-10 place-items-center rounded-full bg-secondary active:scale-95 transition"
           >
             <Minus className="h-4 w-4" />
@@ -216,7 +244,7 @@ const Budget = () => {
             <div className="text-xs text-muted-foreground">heating + hot water</div>
           </div>
           <button
-            onClick={() => handleBudgetChange(Math.min(120, budget + 5))}
+            onClick={() => handleBudgetChange(Math.min(sliderMax, budget + 5))}
             className="grid h-10 w-10 place-items-center rounded-full bg-secondary active:scale-95 transition"
           >
             <Plus className="h-4 w-4" />
@@ -224,8 +252,8 @@ const Budget = () => {
         </div>
         <input
           type="range"
-          min={20}
-          max={120}
+          min={sliderMin}
+          max={sliderMax}
           step={5}
           value={budget}
           onChange={(e) => handleBudgetChange(Number(e.target.value))}
@@ -234,10 +262,16 @@ const Budget = () => {
           className="mt-4 w-full accent-[hsl(var(--accent))]"
         />
         <div className="mt-1 flex justify-between text-[10px] font-semibold text-muted-foreground">
-          <span>€20</span>
-          <span>€70</span>
-          <span>€120</span>
+          <span>€{sliderMin}</span>
+          <span>€{sliderMid}</span>
+          <span>€{sliderMax}</span>
         </div>
+        {lastMonthCost !== null && (
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary px-3 py-2 text-xs">
+            <span className="font-semibold text-muted-foreground">Last month's cost</span>
+            <span className="font-extrabold">€{lastMonthCost}</span>
+          </div>
+        )}
       </section>
 
       {/* Plan — adapts to lifestyle mode */}
@@ -248,9 +282,9 @@ const Budget = () => {
             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider opacity-80">
               <Sparkles className="h-3.5 w-3.5 text-accent" /> Teco's plan • {mode}
             </div>
-            <div className="mt-2 text-sm leading-relaxed prose prose-sm max-w-none prose-p:text-current prose-headings:text-white prose-strong:text-white prose-li:text-current prose-ul:text-current prose-ol:text-current">
+            <div className="mt-2 text-sm leading-relaxed prose prose-sm max-w-none prose-p:text-current prose-headings:text-white prose-strong:text-white prose-li:text-current prose-ul:text-current prose-ol:text-current text-white">
               {targetMut.isPending ? (
-                <div className="flex flex-col gap-2.5 opacity-70">
+                <div className="flex flex-col gap-2.5 opacity-70 text-white">
                   <div className="flex items-center gap-2 text-xs font-bold text-accent mb-1">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Teco is reasoning a custom plan...
                   </div>
@@ -318,11 +352,10 @@ const Budget = () => {
             <button
               key={m.name}
               onClick={() => setMode(m.name)}
-              className={`rounded-2xl border p-3 text-left transition active:scale-95 ${
-                mode === m.name
-                  ? "border-accent bg-accent-soft shadow-soft"
-                  : "border-border bg-card"
-              }`}
+              className={`rounded-2xl border p-3 text-left transition active:scale-95 ${mode === m.name
+                ? "border-accent bg-accent-soft shadow-soft"
+                : "border-border bg-card"
+                }`}
             >
               <div className="text-xl">{m.icon}</div>
               <div className="mt-1 text-sm font-bold">{m.name}</div>
@@ -347,11 +380,10 @@ const Budget = () => {
               key={goal.id}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleSelectGoal(goal)}
-              className={`relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${
-                selectedGoal?.id === goal.id
-                  ? "border-accent bg-accent-soft shadow-glow-eco animate-glow-pulse"
-                  : "border-border bg-card hover:border-accent/40"
-              }`}
+              className={`relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition ${selectedGoal?.id === goal.id
+                ? "border-accent bg-accent-soft shadow-glow-eco animate-glow-pulse"
+                : "border-border bg-card hover:border-accent/40"
+                }`}
             >
               <div className="text-3xl">{goal.emoji}</div>
               <div className="text-xs font-bold">{goal.name}</div>
@@ -467,11 +499,10 @@ const Budget = () => {
               {stamps.map((filled, i) => (
                 <motion.div
                   key={i}
-                  className={`relative grid aspect-square place-items-center rounded-2xl border-2 transition ${
-                    filled
-                      ? "border-accent bg-accent-soft"
-                      : "border-dashed border-border bg-secondary/50"
-                  }`}
+                  className={`relative grid aspect-square place-items-center rounded-2xl border-2 transition ${filled
+                    ? "border-accent bg-accent-soft"
+                    : "border-dashed border-border bg-secondary/50"
+                    }`}
                   animate={justStamped === i ? { scale: [1, 1.3, 0.9, 1] } : {}}
                   transition={{ duration: 0.5 }}
                 >
@@ -546,11 +577,10 @@ const Budget = () => {
               key={b.name}
               whileTap={{ scale: 0.94 }}
               onClick={() => setOpenBadge(b)}
-              className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition ${
-                b.earned
-                  ? "bg-secondary hover:bg-accent-soft"
-                  : "bg-muted/50 opacity-60 hover:opacity-90"
-              }`}
+              className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition ${b.earned
+                ? "bg-secondary hover:bg-accent-soft"
+                : "bg-muted/50 opacity-60 hover:opacity-90"
+                }`}
             >
               <div className="grid h-12 w-12 place-items-center rounded-full bg-card text-2xl shadow-soft">
                 {b.icon}

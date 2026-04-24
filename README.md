@@ -1,10 +1,15 @@
 # 🌍 Techem EcoCoach: AI-Driven Energy Prediction Platform
 
+<p align="center">
+  <img src="frontend/src/assets/teco-celebrating.png" alt="Teco Celebrating" width="150" />
+</p>
+
 ## 1. Project Overview
 
-The **Techem EcoCoach** (Prediction Engine) is an intelligent, predictive Digital Energy Platform designed to transition real estate portfolios from retrospective utility billing to real-time, AI-driven climate neutrality optimization. 
+The **Techem EcoCoach** (Prediction Engine) is an intelligent, predictive Digital Energy Platform designed to transition real estate portfolios from retrospective utility billing to real-time, AI-driven climate neutrality optimization.
 
 By leveraging massive IoT edge data, historical consumption, and external APIs (like live weather), the platform forecasts three critical dimensions:
+
 1. **Energy Consumption** (kWh)
 2. **CO₂ Emissions** (g/kWh)
 3. **Heating Costs** (€)
@@ -18,20 +23,24 @@ This platform provides actionable intelligence for both **Tenants** (to reduce d
 The platform splits into two distinct, role-based experiences:
 
 ### 👥 Tenant Dashboard (EcoCoach)
+
 Empowers individual renters to monitor, predict, and optimize their energy usage.
-*   **Today's Consumption & Budgeting:** Real-time tracking of current daily usage and progress towards user-defined cost/CO₂ reduction targets.
-*   **Predictive Forecasting:** Time-series charts displaying historical actuals and future forecasts based on split-conformal prediction models.
-*   **Room-Level Drilldown:** Identifies which rooms are consuming the most energy and their heat-loss sensitivity.
-*   **AI Conversational Coach:** A Gemini-powered LLM chat interface providing personalized, data-backed energy-saving advice.
-*   **Anomaly & Leak Detection:** Identifies irregular consumption spikes indicating potential leaks or inefficiencies.
-*   **Peer Comparison:** Cohort benchmarking with leaderboards and gamified savings targets.
+
+* **Today's Consumption & Budgeting:** Real-time tracking of current daily usage and progress towards user-defined cost/CO₂ reduction targets.
+* **Predictive Forecasting:** Time-series charts displaying historical actuals and future forecasts based on split-conformal prediction models.
+* **Room-Level Drilldown:** Identifies which rooms are consuming the most energy and their heat-loss sensitivity.
+* **AI Conversational Coach:** A Gemini-powered LLM chat interface providing personalized, data-backed energy-saving advice.
+* **Anomaly & Leak Detection:** Identifies irregular consumption spikes indicating potential leaks or inefficiencies.
+* **Peer Comparison:** Cohort benchmarking with leaderboards and gamified savings targets.
 
 ### 🏢 Landlord Dashboard (Portfolio Manager)
+
 Tailored for property managers to oversee building portfolios and plan ESG compliance.
-*   **Portfolio KPIs:** High-level dashboard aggregating total MWh, costs, CO₂ tons, and average Energy Classes across all properties.
-*   **AI Thermal Insights:** Identifies systemic thermal issues (e.g., severe heat-loss units) across the portfolio using automated sensitivity analysis.
-*   **Retrofit ROI Advisor:** Scenario planner calculating the financial return, carbon tax savings, and expected property value increases for insulation or heating system upgrades.
-*   **Automated ESG Reporting:** AI-generated executive summaries for investors detailing portfolio performance and compliance trajectories.
+
+* **Portfolio KPIs:** High-level dashboard aggregating total MWh, costs, CO₂ tons, and average Energy Classes across all properties.
+* **AI Thermal Insights:** Identifies systemic thermal issues (e.g., severe heat-loss units) across the portfolio using automated sensitivity analysis.
+* **Retrofit ROI Advisor:** Scenario planner calculating the financial return, carbon tax savings, and expected property value increases for insulation or heating system upgrades.
+* **Automated ESG Reporting:** AI-generated executive summaries for investors detailing portfolio performance and compliance trajectories.
 
 ---
 
@@ -40,26 +49,77 @@ Tailored for property managers to oversee building portfolios and plan ESG compl
 The application is built with a modern, high-performance tech stack:
 
 ### Frontend
-*   **Framework:** React 18, Vite, TypeScript
-*   **Routing:** React Router v6
-*   **State Management:** React Query (`@tanstack/react-query`)
-*   **Styling:** Tailwind CSS, `shadcn/ui` (Radix UI primitives)
+
+* **Framework:** React 18, Vite, TypeScript
+* **Routing:** React Router v6
+* **State Management:** React Query (`@tanstack/react-query`)
+* **Styling:** Tailwind CSS, `shadcn/ui` (Radix UI primitives)
 
 ### Backend
-*   **Framework:** Python, FastAPI
-*   **Machine Learning:** PyTorch, XGBoost/LightGBM (for time-series forecasting and regression)
-*   **LLM Integration:** Google Gemini (for conversational agents and narrative generation)
-*   **External APIs:** Meteostat (for live dynamic weather forecasting)
+
+* **Framework:** Python, FastAPI
+* **Machine Learning:** PyTorch, XGBoost/LightGBM (for time-series forecasting and regression)
+* **LLM Integration:** Google Gemini (for conversational agents and narrative generation)
+* **External APIs:** Meteostat (for live dynamic weather forecasting)
 
 ---
 
 ## 🧠 4. AI & Data Architecture
 
-The platform tackles high-scale IoT data with advanced machine learning strategies:
-*   **Hierarchical Reconciliation (MinT):** Disaggregates unit-level consumption down to individual rooms.
-*   **Probabilistic Forecasting:** Uses quantile regression to provide not just point predictions, but calibrated uncertainty bounds (10th/90th quantiles).
-*   **Counterfactual Analysis (What-If):** Evaluates the impact of behavioral changes (e.g., "What if I lower the heat by 1°C?") using learned room-level thermal sensitivities.
-*   **Offline Resilience:** Tenant and landlord LLM features degrade gracefully to tabular data if the API becomes unavailable.
+The platform tackles high-scale IoT data with a 4-layer advanced machine learning stack (L0–L3):
+
+```mermaid
+graph TD
+    %% Define color classes for the nodes
+    classDef l3Node fill:#e1bee7,stroke:#8e24aa,stroke-width:2px,color:#000
+    classDef l2Node fill:#bbdefb,stroke:#1e88e5,stroke-width:2px,color:#000
+    classDef l1Node fill:#c8e6c9,stroke:#43a047,stroke-width:2px,color:#000
+    classDef l0Node fill:#ffccbc,stroke:#e53935,stroke-width:2px,color:#000
+
+    %% L3
+    subgraph L3 ["L3: Application & AI Agents (Business Logic)"]
+        UI("Tenant & Landlord Dashboards"):::l3Node
+        LLM("Gemini LLM (Conversational Coach)"):::l3Node
+        UI --- LLM
+    end
+
+    %% L2
+    subgraph L2 ["L2: Quantile & Counterfactual Models"]
+        Conformal("Conformal Calibration (10th/90th Bounds)"):::l2Node
+        WhatIf("Counterfactual Analysis (Thermal Sensitivity)"):::l2Node
+    end
+
+    %% L1
+    subgraph L1 ["L1: Baseline Machine Learning"]
+        XGB("XGBoost / LightGBM Time-Series"):::l1Node
+        Feat("Feature Engineering (Weather, History)"):::l1Node
+        Feat --> XGB
+    end
+
+    %% L0
+    subgraph L0 ["L0: Hierarchical Reconciliation"]
+        Raw("Raw IoT Sensor Data (Unit Level)"):::l0Node
+        Recon("Reconciliation (MinT / Room Shares)"):::l0Node
+        Raw --> Recon
+    end
+
+    %% Flow (Connecting specific nodes to ensure 8.8.0 compatibility)
+    Recon -->|Disaggregated Data| Feat
+    XGB -->|Point Forecasts| Conformal
+    Conformal -->|Calibrated Predictions| UI
+    WhatIf -->|Calibrated Predictions| UI
+
+    %% Add background colors and dashed borders to the subgraphs themselves
+    style L3 fill:#f3e5f5,stroke:#ab47bc,stroke-dasharray: 5 5,stroke-width:2px
+    style L2 fill:#e3f2fd,stroke:#42a5f5,stroke-dasharray: 5 5,stroke-width:2px
+    style L1 fill:#e8f5e9,stroke:#66bb6a,stroke-dasharray: 5 5,stroke-width:2px
+    style L0 fill:#fbe9e7,stroke:#ff7043,stroke-dasharray: 5 5,stroke-width:2px
+```
+
+* **L0 - Hierarchical Reconciliation (MinT):** Disaggregates unit-level consumption down to individual rooms.
+* **L1 - Baseline Machine Learning:** Core forecasting using advanced tree-based models and exogenous features.
+* **L2 - Probabilistic Forecasting & What-If:** Uses quantile regression to provide calibrated uncertainty bounds (10th/90th quantiles) and evaluates behavioral changes (e.g., "What if I lower the heat by 1°C?") using learned room-level thermal sensitivities.
+* **L3 - Online Application & AI:** The presentation and conversational layer. Tenant and landlord LLM features degrade gracefully to tabular data if the API becomes unavailable (Offline Resilience).
 
 ---
 
@@ -68,6 +128,7 @@ The platform tackles high-scale IoT data with advanced machine learning strategi
 The repository consists of a frontend and a backend application.
 
 ### Running the Backend
+
 1. Navigate to the `src` directory (or wherever your backend app resides).
 2. Install the required dependencies.
 3. Set your environment variables (including `GEMINI_API_KEY`).
@@ -78,6 +139,7 @@ The repository consists of a frontend and a backend application.
 5. View the interactive Swagger API documentation at `http://localhost:8123/docs`.
 
 ### Running the Frontend
+
 1. Navigate to the `frontend` directory.
 2. Install dependencies:
    ```bash
@@ -87,11 +149,13 @@ The repository consists of a frontend and a backend application.
    ```bash
    npm run dev:frontend
    ```
+
    *Note: Currently, the frontend is partially driven by a robust mock data layer (`src/lib/mockData.ts`). Full backend integration involves swapping these mock objects with live React Query hooks pointing to the FastAPI endpoints.*
 
 ---
 
 ## 🔮 6. Future Expansions
-*   **Carbon Tax Predictor:** Project future CO₂ emission costs based on impending regulatory hikes.
-*   **Solar PV Potential Estimator:** Automatically calculate rooftop solar yield.
-*   **Predictive Maintenance:** Detect hardware faults in boilers or individual radiators before a breakdown occurs.
+
+* **Carbon Tax Predictor:** Project future CO₂ emission costs based on impending regulatory hikes.
+* **Solar PV Potential Estimator:** Automatically calculate rooftop solar yield.
+* **Predictive Maintenance:** Detect hardware faults in boilers or individual radiators before a breakdown occurs.
