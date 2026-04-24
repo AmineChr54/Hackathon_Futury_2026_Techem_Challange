@@ -1,7 +1,41 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -m venv .venv)"
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/Scripts/uvicorn.exe techem.serve.api:app --host 127.0.0.1 --port 8765 --app-dir src)",
+      "Bash(curl -s -f http://127.0.0.1:8765/health)",
+      "Bash(curl -s http://127.0.0.1:8765/health)",
+      "Bash(curl -s \"http://127.0.0.1:8765/forecast/unit/1/1?horizon_days=14\")",
+      "Bash(curl -s \"http://127.0.0.1:8765/drilldown/unit/1/1?horizon_days=14\")",
+      "Bash(curl -s \"http://127.0.0.1:8765/peers/1/1\")",
+      "Bash(curl -s -X POST \"http://127.0.0.1:8765/whatif/unit/1/1\" -H \"Content-Type: application/json\" -d '{\"temp_delta_c\":-1.0,\"horizon_days\":30,\"use_live_weather\":false}')",
+      "Bash(curl -s \"http://127.0.0.1:8765/drift?property_id=1\")",
+      "Bash(.venv/Scripts/python.exe -m scripts.train)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/ -q)",
+      "Bash(.venv/Scripts/pip.exe install *)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/ -v)",
+      "Bash(.venv/Scripts/python.exe -c \"import meteostat; print\\(dir\\(meteostat\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"from meteostat import Daily; print\\(Daily\\)\")",
+      "Bash(.venv/Scripts/python.exe -m scripts.ablation)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(npx vite *)",
+      "Bash(npm install *)",
+      "Bash(python -m uvicorn techem.serve.api:app --app-dir src --port 8123)",
+      "Bash(curl -s http://localhost:8123/health)",
+      "Bash(curl -s http://localhost:8123/units)",
+      "Bash(curl -s http://localhost:8123/today/1/101)",
+      "Bash(curl -s http://localhost:8123/forecast/unit/1/101?horizon_days=5)",
+      "Bash(curl -sS \"http://127.0.0.1:8000/health\")",
+      "Bash(python -c \"import uvicorn\")",
+      "Bash(python *)",
+      "Bash(break)",
+      "Bash(PYTHONPATH=src python *)",
+      "Bash(curl -sS \"http://127.0.0.1:8000/units\")",
+      "Bash(curl -sS \"http://127.0.0.1:8000/forecast/unit/1/1?horizon_days=30\")",
+      "Bash(curl -sS -X POST \"http://127.0.0.1:8000/__never__\")",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force\")"
     ]
   }
 }

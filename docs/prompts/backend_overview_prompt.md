@@ -1,0 +1,1 @@
+hey, the next phase im entering is the mixture of backend with the frontend mock up. i would suggest if we do at first a full backend overview to point all the endpoints, all the functionalities it provides, so please save it in a backend_overview.md file. please correct me and enhance me if im wrong

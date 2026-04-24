@@ -17,6 +17,7 @@ will see.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,8 +26,10 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from techem.config import MODELS_DIR, QUANTILES
+from techem.config import EVAL_HORIZONS_DAYS, MODELS_DIR, QUANTILES
 from techem.features.engineering import CATEGORICAL_COLUMNS, FEATURE_COLUMNS
+
+CONFORMAL_FILE = "l2_conformal.json"
 
 TEMP_FEATS_FOR_NOISE = ("outside_temp", "temp_roll1", "temp_roll3", "temp_roll7")
 TEMP_NOISE_STD_BY_HORIZON = {1: 1.0, 7: 2.5, 14: 3.5, 30: 4.0}
@@ -143,3 +146,88 @@ def load_models(directory: Path = MODELS_DIR) -> tuple[lgb.Booster, dict[float, 
         if path.exists():
             quantiles[q] = lgb.Booster(model_file=str(path))
     return tweedie, quantiles
+
+
+# ---------- split-conformal calibration ----------
+#
+# CQR-style asymmetric conformalization: on held-out fold residuals, we
+# compute per-horizon-bucket widenings (delta_lo, delta_hi) so that the
+# empirical coverage of [q10 - delta_lo, q90 + delta_hi] is at least the
+# nominal 0.80. Buckets are aligned to EVAL_HORIZONS_DAYS; an inference
+# row at day h picks the smallest bucket >= h (falling back to the
+# largest bucket).
+
+def _bucket_for(horizon_days: int, buckets: tuple[int, ...]) -> int:
+    for b in buckets:
+        if horizon_days <= b:
+            return b
+    return buckets[-1]
+
+
+def compute_conformal_deltas(
+    cv_preds: pd.DataFrame,
+    y_col: str = "kwh",
+    q_low_col: str = "q10",
+    q_high_col: str = "q90",
+    alpha: float = 0.20,
+    horizons: tuple[int, ...] = EVAL_HORIZONS_DAYS,
+) -> dict:
+    """Return per-horizon-bucket conformal widenings.
+
+    For each bucket b (= cumulative horizon), take rows with
+    `horizon_days <= b` and compute:
+        s_hi_i = y_i - q90_i        (positive => q90 was too low)
+        s_lo_i = q10_i - y_i        (positive => q10 was too high)
+        delta_hi = empirical (1 - alpha/2) quantile of s_hi (floored at 0)
+        delta_lo = empirical (1 - alpha/2) quantile of s_lo (floored at 0)
+    """
+    out: dict[str, dict] = {"alpha": alpha, "buckets": {}}
+    y = cv_preds[y_col].values
+    ql = cv_preds[q_low_col].values
+    qh = cv_preds[q_high_col].values
+    hor = cv_preds["horizon_days"].values
+    one_sided = 1.0 - alpha / 2.0
+    for b in horizons:
+        mask = hor <= b
+        if mask.sum() < 10:
+            continue
+        s_hi = y[mask] - qh[mask]
+        s_lo = ql[mask] - y[mask]
+        d_hi = float(max(0.0, np.quantile(s_hi, one_sided)))
+        d_lo = float(max(0.0, np.quantile(s_lo, one_sided)))
+        out["buckets"][str(b)] = {"delta_lo": d_lo, "delta_hi": d_hi, "n": int(mask.sum())}
+    return out
+
+
+def save_conformal(deltas: dict, directory: Path = MODELS_DIR) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / CONFORMAL_FILE).write_text(json.dumps(deltas, indent=2))
+
+
+def load_conformal(directory: Path = MODELS_DIR) -> dict | None:
+    path = directory / CONFORMAL_FILE
+    if not path.exists():
+        return None
+    return json.loads(path.read_text())
+
+
+def apply_conformal(
+    q10: np.ndarray,
+    q90: np.ndarray,
+    horizon_days_per_row: np.ndarray,
+    deltas: dict | None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Widen q10/q90 using per-horizon deltas. No-op if deltas is None."""
+    if not deltas or not deltas.get("buckets"):
+        return q10, q90
+    buckets = tuple(sorted(int(k) for k in deltas["buckets"].keys()))
+    d_lo = np.zeros_like(q10, dtype="float32")
+    d_hi = np.zeros_like(q90, dtype="float32")
+    for i, h in enumerate(horizon_days_per_row):
+        b = _bucket_for(int(h), buckets)
+        row = deltas["buckets"][str(b)]
+        d_lo[i] = row["delta_lo"]
+        d_hi[i] = row["delta_hi"]
+    q10_new = np.clip(q10 - d_lo, 0.0, None).astype("float32")
+    q90_new = (q90 + d_hi).astype("float32")
+    return q10_new, q90_new

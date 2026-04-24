@@ -12,15 +12,16 @@ from __future__ import annotations
 
 import pandas as pd
 
-from techem.config import UNIT_DAILY_PARQUET
+from techem.config import ROOT, UNIT_DAILY_PARQUET
 from techem.features.engineering import (
     CATEGORICAL_COLUMNS,
     FEATURE_COLUMNS,
     build_feature_frame,
 )
-from techem.models import l2_quantile
 from techem.models.cv import SplitSpec, blocked_time_splits
 from techem.models.metrics import mae
+
+REPORT_PATH = ROOT / "reports" / "ablation.md"
 
 ABLATIONS = {
     "none (full)": set(),
@@ -71,11 +72,31 @@ def main() -> None:
         r["delta_mae"] = r["mae"] - baseline_mae
         r["delta_pct"] = 100 * r["delta_mae"] / baseline_mae if baseline_mae else 0.0
         rows.append(r)
-        print(f"  {name:20s}  MAE={r['mae']:.4f}  Δ={r['delta_mae']:+.4f}  ({r['delta_pct']:+.1f}%)")
+        print(f"  {name:20s}  MAE={r['mae']:.4f}  d={r['delta_mae']:+.4f}  ({r['delta_pct']:+.1f}%)")
 
     df = pd.DataFrame(rows)[["ablation", "dropped", "n", "mae", "delta_mae", "delta_pct"]]
     print("\nablation summary:")
     print(df.to_string(index=False))
+
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Feature ablation — L2 Tweedie, blocked 30-day CV",
+        "",
+        "Each row drops one feature group from the full model and retrains "
+        "with otherwise identical hyperparameters. `delta_mae` is the MAE "
+        "regression vs. the full model — the larger the number, the more "
+        "important the feature group.",
+        "",
+        "| ablation | dropped columns | n | MAE | ΔMAE | Δ% |",
+        "|---|---|---:|---:|---:|---:|",
+    ]
+    for r in rows:
+        lines.append(
+            f"| {r['ablation']} | {r['dropped']} | {r['n']:,} | "
+            f"{r['mae']:.4f} | {r['delta_mae']:+.4f} | {r['delta_pct']:+.1f}% |"
+        )
+    REPORT_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"\nwrote {REPORT_PATH}")
 
 
 if __name__ == "__main__":
