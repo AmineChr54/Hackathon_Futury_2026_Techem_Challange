@@ -1,0 +1,6 @@
+Hey okay lets implement some endpoints and features for the landlords to use, please do a thorough plan on it and feel free to ask me if youre uncertain on a point: here are the points:
+1- the landlord wanna see the usage of the buildings and units and and the CO2 usage and the money spent (even  tho he shouldnt care how much they spend) Efficiency of the  buildings and see the Energy score for each building. so we need endpoints for these
+2- based on the efficiency and the co2 and the energy score the ai coacher can like suggest real insights about this and decisions to do (is it realistic to modernimze the heating for these building and does it bring money? or like does he install like some type of curtains or like i dont know add things to the walls, or like i dont know check the rooms isolations for the windows to decrease its usage so he has to actually check those rooms windows that are flagged by the ai) please elaborate and brainstorm on this point
+3- we wanna make sure that the landlord based on lower co2 consumptions pays less taxes  and make profit out of it, and make sure the properties he has is actually eco friendly because that will make the property more valuable and attractive
+4- create endpoints for everything and also the reasoning ai should like give real results
+5- include a way to do an ESG report

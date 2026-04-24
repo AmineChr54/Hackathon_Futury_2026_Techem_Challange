@@ -90,7 +90,7 @@ def main() -> None:
     print("\n[eval] Horizon report (point median pred):")
     print(horizon_report(cv_preds, y_col="kwh", pred_col="pred", horizons_days=EVAL_HORIZONS_DAYS).to_string(index=False))
 
-    print("\n[eval] Quantile calibration:")
+    print("\n[eval] Quantile calibration (pre-conformal):")
     cov_80 = coverage(cv_preds["kwh"].values, cv_preds["q10"].values, cv_preds["q90"].values)
     p10 = pinball(cv_preds["kwh"].values, cv_preds["q10"].values, 0.1)
     p90 = pinball(cv_preds["kwh"].values, cv_preds["q90"].values, 0.9)
@@ -99,6 +99,24 @@ def main() -> None:
     print(f"      pinball(0.9)      = {p90:.4f}")
     print(f"      overall MAE       = {mae(cv_preds['kwh'].values, cv_preds['pred'].values):.4f}")
     print(f"      overall MAPE      = {mape(cv_preds['kwh'].values, cv_preds['pred'].values):.4f}")
+
+    print("\n[eval] Split-conformal calibration on CV residuals (alpha=0.20):")
+    # Each fold's predictions were produced by a model trained on strictly
+    # earlier data — these are already legitimate out-of-sample residuals,
+    # so pooling all folds for conformal calibration is standard CQR.
+    deltas = l2_quantile.compute_conformal_deltas(cv_preds)
+    for b, row in sorted(deltas["buckets"].items(), key=lambda kv: int(kv[0])):
+        print(f"      bucket h<= {b:>2}d  delta_lo={row['delta_lo']:.3f}  delta_hi={row['delta_hi']:.3f}  n={row['n']}")
+    l2_quantile.save_conformal(deltas)
+
+    q10_cf, q90_cf = l2_quantile.apply_conformal(
+        cv_preds["q10"].values,
+        cv_preds["q90"].values,
+        cv_preds["horizon_days"].values,
+        deltas,
+    )
+    cov_post = coverage(cv_preds["kwh"].values, q10_cf, q90_cf)
+    print(f"      pooled CV:  pre={cov_80:.3f}  post={cov_post:.3f}  target 0.80")
 
     print("\n[4/7] Final fit on all data")
     tweedie = l2_quantile.fit_tweedie(feat)

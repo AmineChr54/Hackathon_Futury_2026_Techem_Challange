@@ -4,10 +4,17 @@ We forecast at the unit level (where billing happens). Room-level
 drill-down is derived by disaggregating the unit forecast using the
 historical share each room has of the unit's total.
 
-This implements proportions reconciliation (bottom-up shares). MinT from
-Nixtla's `hierarchicalforecast` is a strictly better reconciler but
-requires aligned, per-node forecasts we don't all have — we use a
-MinT-compatible interface so swapping in the full library is one line.
+`reconcile(method=...)` is the dispatch entrypoint. Two methods:
+
+  * ``"proportions"`` (default): bottom-up shares applied to the unit
+    forecast. Closed-form, cheap, and preserves the invariant that
+    Σ_rooms == unit by construction.
+  * ``"mint"``: MinT reconciliation via Nixtla's ``hierarchicalforecast``.
+    MinT is strictly better when independent, same-target forecasts exist
+    at multiple levels of the hierarchy (room *and* unit). We only
+    produce unit-level forecasts today, so MinT has nothing to
+    cross-reconcile — calling it raises NotImplementedError rather than
+    pretending. The hook is in place for a future per-room L2.
 
 Invariant (enforced in tests):
     forecast_room_i ≥ 0  and  Σ_i forecast_room_i == forecast_unit
@@ -15,6 +22,8 @@ Invariant (enforced in tests):
 from __future__ import annotations
 
 import pandas as pd
+
+from techem.config import RECONCILE_METHOD
 
 
 def room_shares(consumption: pd.DataFrame, lookback_days: int = 180) -> pd.DataFrame:
@@ -61,6 +70,40 @@ def disaggregate(
         merged[c] = merged[c] * merged["share"]
     drop = ["share"]
     return merged.drop(columns=drop)
+
+
+def reconcile(
+    unit_forecast: pd.DataFrame,
+    shares: pd.DataFrame,
+    room_forecast: pd.DataFrame | None = None,
+    method: str | None = None,
+) -> pd.DataFrame:
+    """Dispatch to the configured reconciliation method.
+
+    Parameters
+    ----------
+    unit_forecast : unit-level predictions (the only forecast we produce
+        today).
+    shares : per-room share of unit total (from ``room_shares``).
+    room_forecast : independent room-level predictions, required only
+        when ``method='mint'``. Leave ``None`` for proportions.
+    method : override the config default (``RECONCILE_METHOD``).
+    """
+    m = (method or RECONCILE_METHOD).lower()
+    if m == "proportions":
+        return disaggregate(unit_forecast, shares)
+    if m == "mint":
+        if room_forecast is None:
+            raise NotImplementedError(
+                "MinT needs independent per-room forecasts. Build a per-room "
+                "L2 first, then pass them in as `room_forecast`."
+            )
+        # Placeholder for the eventual swap:
+        #     from hierarchicalforecast.methods import MinTrace
+        #     from hierarchicalforecast.core import HierarchicalReconciliation
+        #     ...
+        raise NotImplementedError("MinT wiring is stubbed; see docstring.")
+    raise ValueError(f"Unknown reconciliation method: {method}")
 
 
 def check_reconciliation_invariant(
