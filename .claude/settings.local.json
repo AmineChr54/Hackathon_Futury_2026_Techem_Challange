@@ -36,7 +36,8 @@
       "Bash(curl -sS -X POST \"http://127.0.0.1:8000/__never__\")",
       "Bash(taskkill /F /IM python.exe)",
       "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force\")",
-      "Bash(.venv/Scripts/python.exe)"
+      "Bash(.venv/Scripts/python.exe)",
+      "Bash(d:/Projects/Hackathons/Hackathon_Futury_2026_Techem_Challange/.venv/Scripts/python.exe -c \"import sys, meteostat; print\\('exec:', sys.executable\\); print\\('meteostat:', meteostat.__version__ if hasattr\\(meteostat,'__version__'\\) else '?'\\); print\\('path:', meteostat.__file__\\)\")"
     ]
   }
 }
