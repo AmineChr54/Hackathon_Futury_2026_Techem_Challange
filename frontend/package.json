@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k -n backend,frontend -c yellow,cyan \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "vite",
-    "dev:backend": "../.venv/Scripts/python.exe -m uvicorn techem.serve.api:app --app-dir ../src --port 8123 --reload",
+    "dev:backend": "..\\.venv\\Scripts\\python.exe -m uvicorn techem.serve.api:app --app-dir ../src --port 8123 --reload",
     "dev:frontend-only": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
