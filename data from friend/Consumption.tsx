@@ -53,13 +53,15 @@ const Consumption = () => {
   const xKey = rangeXKey[range];
   const m = metricMeta[metric];
 
-  const avgKey =
-    metric === "consumption" ? "avgConsumption" : metric === "cost" ? "avgCost" : "avgCo2";
+  // Split actual vs forecast into two parallel series so we can render
+  // a solid line for actuals and a dashed line for predictions.
+  const avgKey = metric === "consumption" ? "avgConsumption" : metric === "cost" ? "avgCost" : "avgCo2";
   const data = raw.map((d, i) => {
     const next = raw[i + 1];
     return {
       ...d,
       actual: d.kind === "actual" ? d[metric] : null,
+      // Connect last actual point to forecast line for visual continuity.
       forecast:
         d.kind === "forecast"
           ? d[metric]
@@ -81,6 +83,7 @@ const Consumption = () => {
   const fmt = (n: number) =>
     metric === "cost" ? `€${n.toFixed(0)}` : n.toFixed(metric === "consumption" && range === "Daily" ? 1 : 0);
 
+  // Forecast headline (predictive model output)
   const forecastHeadline =
     range === "Daily"
       ? `Tomorrow's predicted use: ${tenantToday.predictedTomorrowKwh} kWh`

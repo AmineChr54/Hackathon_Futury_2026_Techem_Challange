@@ -22,38 +22,38 @@ export const tenantToday = {
 
 // Daily series: 7 actual days + 3 predicted days
 export const consumptionDaily = [
-  { label: "Mon", consumption: 12.4, cost: 4.1, co2: 2.7, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Tue", consumption: 11.8, cost: 3.9, co2: 2.5, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Wed", consumption: 15.6, cost: 5.2, co2: 3.4, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Thu", consumption: 13.1, cost: 4.4, co2: 2.9, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Fri", consumption: 14.9, cost: 5.0, co2: 3.2, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Sat", consumption: 16.3, cost: 5.6, co2: 3.6, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
-  { label: "Sun", consumption: 14.2, cost: 4.85, co2: 3.1, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Mon", consumption: 12.4, cost: 4.1, co2: 2.7, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Tue", consumption: 11.8, cost: 3.9, co2: 2.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Wed", consumption: 15.6, cost: 5.2, co2: 3.4, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Thu", consumption: 13.1, cost: 4.4, co2: 2.9, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Fri", consumption: 14.9, cost: 5.0, co2: 3.2, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Sat", consumption: 16.3, cost: 5.6, co2: 3.6, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
+  { label: "Sun", consumption: 14.2, cost: 4.85, co2: 3.1, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "actual" as const },
   // Forecast — predicted by the model (next 3 days)
-  { label: "Mon+", consumption: 13.1, cost: 4.4, co2: 2.8, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
-  { label: "Tue+", consumption: 12.4, cost: 4.2, co2: 2.7, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
-  { label: "Wed+", consumption: 11.8, cost: 4.0, co2: 2.6, avg: 14.5, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
+  { label: "Mon+", consumption: 13.1, cost: 4.4, co2: 2.8, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
+  { label: "Tue+", consumption: 12.4, cost: 4.2, co2: 2.7, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
+  { label: "Wed+", consumption: 11.8, cost: 4.0, co2: 2.6, avgConsumption: 14.5, avgCost: 5, avgCo2: 3, kind: "forecast" as const },
 ];
 
 // Monthly series: 6 actual + 2 forecast months
 export const consumptionMonthly = [
-  { label: "Nov", consumption: 412, cost: 138, co2: 92, avg: 460, avgConsumption: 460, avgCost: 150, avgCo2: 100, kind: "actual" as const },
-  { label: "Dec", consumption: 498, cost: 168, co2: 110, avg: 510, avgConsumption: 510, avgCost: 160, avgCo2: 110, kind: "actual" as const },
-  { label: "Jan", consumption: 521, cost: 176, co2: 118, avg: 540, avgConsumption: 540, avgCost: 170, avgCo2: 120, kind: "actual" as const },
-  { label: "Feb", consumption: 467, cost: 158, co2: 104, avg: 490, avgConsumption: 490, avgCost: 160, avgCo2: 110, kind: "actual" as const },
-  { label: "Mar", consumption: 389, cost: 132, co2: 86, avg: 420, avgConsumption: 420, avgCost: 140, avgCo2: 95, kind: "actual" as const },
-  { label: "Apr", consumption: 286, cost: 96, co2: 64, avg: 320, avgConsumption: 320, avgCost: 120, avgCo2: 80, kind: "actual" as const },
-  { label: "May*", consumption: 218, cost: 74, co2: 49, avg: 280, avgConsumption: 280, avgCost: 110, avgCo2: 70, kind: "forecast" as const },
-  { label: "Jun*", consumption: 172, cost: 58, co2: 38, avg: 230, avgConsumption: 230, avgCost: 100, avgCo2: 60, kind: "forecast" as const },
+  { label: "Nov", consumption: 412, cost: 138, co2: 92, avgConsumption: 460, avgCost: 150, avgCo2: 100, kind: "actual" as const },
+  { label: "Dec", consumption: 498, cost: 168, co2: 110, avgConsumption: 510, avgCost: 160, avgCo2: 110, kind: "actual" as const },
+  { label: "Jan", consumption: 521, cost: 176, co2: 118, avgConsumption: 540, avgCost: 170, avgCo2: 120, kind: "actual" as const },
+  { label: "Feb", consumption: 467, cost: 158, co2: 104, avgConsumption: 490, avgCost: 160, avgCo2: 110, kind: "actual" as const },
+  { label: "Mar", consumption: 389, cost: 132, co2: 86, avgConsumption: 420, avgCost: 140, avgCo2: 95, kind: "actual" as const },
+  { label: "Apr", consumption: 286, cost: 96, co2: 64, avgConsumption: 320, avgCost: 120, avgCo2: 80, kind: "actual" as const },
+  { label: "May*", consumption: 218, cost: 74, co2: 49, avgConsumption: 280, avgCost: 110, avgCo2: 70, kind: "forecast" as const },
+  { label: "Jun*", consumption: 172, cost: 58, co2: 38, avgConsumption: 230, avgCost: 100, avgCo2: 60, kind: "forecast" as const },
 ];
 
 // Yearly series: 4 actual + 1 forecast
 export const consumptionYearly = [
-  { label: "2022", consumption: 4820, cost: 1620, co2: 1080, avg: 5200, avgConsumption: 5200, avgCost: 1700, avgCo2: 1150, kind: "actual" as const },
-  { label: "2023", consumption: 4510, cost: 1580, co2: 1010, avg: 5050, avgConsumption: 5050, avgCost: 1680, avgCo2: 1100, kind: "actual" as const },
-  { label: "2024", consumption: 4180, cost: 1520, co2: 940, avg: 4900, avgConsumption: 4900, avgCost: 1650, avgCo2: 1050, kind: "actual" as const },
-  { label: "2025", consumption: 3920, cost: 1465, co2: 880, avg: 4750, avgConsumption: 4750, avgCost: 1620, avgCo2: 1000, kind: "actual" as const },
-  { label: "2026*", consumption: 3680, cost: 1380, co2: 820, avg: 4600, avgConsumption: 4600, avgCost: 1600, avgCo2: 950, kind: "forecast" as const },
+  { label: "2022", consumption: 4820, cost: 1620, co2: 1080, avgConsumption: 5200, avgCost: 1700, avgCo2: 1150, kind: "actual" as const },
+  { label: "2023", consumption: 4510, cost: 1580, co2: 1010, avgConsumption: 5050, avgCost: 1680, avgCo2: 1100, kind: "actual" as const },
+  { label: "2024", consumption: 4180, cost: 1520, co2: 940, avgConsumption: 4900, avgCost: 1650, avgCo2: 1050, kind: "actual" as const },
+  { label: "2025", consumption: 3920, cost: 1465, co2: 880, avgConsumption: 4750, avgCost: 1620, avgCo2: 1000, kind: "actual" as const },
+  { label: "2026*", consumption: 3680, cost: 1380, co2: 820, avgConsumption: 4600, avgCost: 1600, avgCo2: 950, kind: "forecast" as const },
 ];
 
 export const rooms = [
@@ -82,8 +82,8 @@ export const coachingTips = [
     tone: "success" as const,
   },
   {
-    title: "Small Changes, Big Impact",
-    body: "Small changes make a big impact! Let's chat about how to maximize your efficiency this week.",
+    title: "Weather-smart heating",
+    body: "It's 15°C outside tonight. Lowering the heater from 3 to 2 could trim today's cost by ~12%.",
     tone: "tip" as const,
   },
   {
@@ -226,14 +226,14 @@ export const buildings: Array<{
   predictedClass: EnergyClass; // forecast after recommended retrofit
   predictedCostEur: number;    // predicted next-year cost
 }> = [
-    { id: "b1", name: "Linden Hof 12", city: "Berlin", units: 24, energyClass: "C", consumptionMwh: 142, costEur: 47800, co2Tons: 28, alerts: 0, efficiency: 82, predictedClass: "B", predictedCostEur: 44200 },
-    { id: "b2", name: "Eichenweg 7", city: "Frankfurt", units: 18, energyClass: "F", consumptionMwh: 198, costEur: 66400, co2Tons: 41, alerts: 2, efficiency: 48, predictedClass: "D", predictedCostEur: 52100 },
-    { id: "b3", name: "Rosenstraße 22", city: "Munich", units: 30, energyClass: "B", consumptionMwh: 156, costEur: 52100, co2Tons: 31, alerts: 0, efficiency: 88, predictedClass: "A", predictedCostEur: 48400 },
-    { id: "b4", name: "Birkenallee 5", city: "Hamburg", units: 12, energyClass: "G", consumptionMwh: 174, costEur: 58300, co2Tons: 36, alerts: 3, efficiency: 38, predictedClass: "E", predictedCostEur: 41800 },
-    { id: "b5", name: "Ahornpark 9", city: "Cologne", units: 22, energyClass: "D", consumptionMwh: 168, costEur: 56200, co2Tons: 34, alerts: 1, efficiency: 64, predictedClass: "C", predictedCostEur: 49600 },
-    { id: "b6", name: "Tannenring 3", city: "Stuttgart", units: 16, energyClass: "E", consumptionMwh: 152, costEur: 50800, co2Tons: 32, alerts: 0, efficiency: 56, predictedClass: "D", predictedCostEur: 45200 },
-    { id: "b7", name: "Buchenhof 14", city: "Düsseldorf", units: 28, energyClass: "A", consumptionMwh: 118, costEur: 39400, co2Tons: 22, alerts: 0, efficiency: 92, predictedClass: "A", predictedCostEur: 38100 },
-  ];
+  { id: "b1", name: "Linden Hof 12", city: "Berlin", units: 24, energyClass: "C", consumptionMwh: 142, costEur: 47800, co2Tons: 28, alerts: 0, efficiency: 82, predictedClass: "B", predictedCostEur: 44200 },
+  { id: "b2", name: "Eichenweg 7", city: "Frankfurt", units: 18, energyClass: "F", consumptionMwh: 198, costEur: 66400, co2Tons: 41, alerts: 2, efficiency: 48, predictedClass: "D", predictedCostEur: 52100 },
+  { id: "b3", name: "Rosenstraße 22", city: "Munich", units: 30, energyClass: "B", consumptionMwh: 156, costEur: 52100, co2Tons: 31, alerts: 0, efficiency: 88, predictedClass: "A", predictedCostEur: 48400 },
+  { id: "b4", name: "Birkenallee 5", city: "Hamburg", units: 12, energyClass: "G", consumptionMwh: 174, costEur: 58300, co2Tons: 36, alerts: 3, efficiency: 38, predictedClass: "E", predictedCostEur: 41800 },
+  { id: "b5", name: "Ahornpark 9", city: "Cologne", units: 22, energyClass: "D", consumptionMwh: 168, costEur: 56200, co2Tons: 34, alerts: 1, efficiency: 64, predictedClass: "C", predictedCostEur: 49600 },
+  { id: "b6", name: "Tannenring 3", city: "Stuttgart", units: 16, energyClass: "E", consumptionMwh: 152, costEur: 50800, co2Tons: 32, alerts: 0, efficiency: 56, predictedClass: "D", predictedCostEur: 45200 },
+  { id: "b7", name: "Buchenhof 14", city: "Düsseldorf", units: 28, energyClass: "A", consumptionMwh: 118, costEur: 39400, co2Tons: 22, alerts: 0, efficiency: 92, predictedClass: "A", predictedCostEur: 38100 },
+];
 
 // Building trend with actuals + 2 forecast months
 export const buildingTrend = [
