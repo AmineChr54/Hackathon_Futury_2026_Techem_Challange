@@ -10,7 +10,8 @@ import {
   tenantNotifications as mockNotifications,
 } from "@/lib/mockData";
 import { useUnitContext } from "@/lib/unitContext";
-import { useToday, useForecast, useHistory, useRecommendations, useLeaks } from "@/hooks/useApi";
+import { useToday, useForecast, useHistory, useRecommendations, useLeaks, useWeatherForecast } from "@/hooks/useApi";
+import type { WeatherDay } from "@/lib/apiTypes";
 import {
   forecastToDailySeries,
   forecastToMonthlySeries,
@@ -29,6 +30,10 @@ import {
 } from "recharts";
 import {
   Cloud,
+  Sun,
+  CloudSun,
+  CloudRain,
+  Snowflake,
   Flame,
   Euro,
   Leaf,
@@ -41,6 +46,88 @@ import {
   Zap,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+
+/* ---------- Weather Icons ---------- */
+const weatherIcons: Record<string, { icon: any; gradient: string }> = {
+  sunny: { icon: Sun, gradient: "from-amber-400 to-orange-400" },
+  partly_cloudy: { icon: CloudSun, gradient: "from-amber-300 to-slate-400" },
+  cloudy: { icon: Cloud, gradient: "from-slate-400 to-slate-500" },
+  rainy: { icon: CloudRain, gradient: "from-blue-400 to-slate-500" },
+  snowy: { icon: Snowflake, gradient: "from-sky-300 to-blue-400" },
+};
+
+/* ---------- Fallback weather data ---------- */
+const FALLBACK_WEATHER: WeatherDay[] = [
+  { date: "", day: "Mon", high: 20, low: 4, condition: "partly_cloudy" },
+  { date: "", day: "Tue", high: 20, low: 4, condition: "sunny" },
+  { date: "", day: "Wed", high: 17, low: 5, condition: "partly_cloudy" },
+  { date: "", day: "Thu", high: 19, low: 5, condition: "cloudy" },
+  { date: "", day: "Fri", high: 16, low: 7, condition: "sunny" },
+  { date: "", day: "Sat", high: 18, low: 6, condition: "sunny" },
+  { date: "", day: "Sun", high: 18, low: 7, condition: "sunny" },
+  { date: "", day: "Mon", high: 19, low: 7, condition: "cloudy" },
+];
+
+/* ---------- Weather Forecast Strip ---------- */
+const formatSimDate = (iso: string): string => {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const WeatherForecastStrip = ({ days }: { days: WeatherDay[] }) => (
+  <section className="-mx-4 px-4">
+    <div className="mb-2 flex items-center justify-between">
+      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        8-day forecast
+      </span>
+      <span
+        className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold text-accent"
+        title="Simulated 'today' for demo — pinned to last day of dataset"
+      >
+        Simulated today · {formatSimDate(days[0]?.date ?? "")}
+      </span>
+    </div>
+    <div className="overflow-x-auto scroll-hide">
+    <div className="flex gap-1 min-w-max">
+      {days.map((d, i) => {
+        const { icon: Icon, gradient } = weatherIcons[d.condition] ?? weatherIcons.cloudy;
+        const isToday = i === 0;
+        return (
+          <motion.div
+            key={d.date || i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04 }}
+            className={`flex flex-col items-center gap-1 rounded-2xl px-3.5 py-3 min-w-[64px] transition ${isToday
+              ? "bg-card/80 ring-1 ring-accent/30 shadow-soft"
+              : "hover:bg-card/40"
+              }`}
+          >
+            <span className={`text-[11px] font-bold ${isToday ? "text-accent" : "text-muted-foreground"
+              }`}>
+              {isToday ? "Today" : d.day}
+            </span>
+            <div className={`my-1 grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br ${gradient} shadow-sm`}>
+              <Icon className="h-4 w-4 text-white drop-shadow" />
+            </div>
+            <div className="flex items-baseline gap-1 text-[11px] font-bold">
+              <span className="text-foreground">{d.high}°</span>
+              <span className="text-muted-foreground">{d.low}°</span>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+    </div>
+  </section>
+);
 
 const SummaryCard = ({
   icon: Icon,
@@ -101,12 +188,16 @@ const toneStyles = {
 const TenantHome = () => {
   const [range, setRange] = useState<Range>("Daily");
   const [mode, setMode] = useState<Mode>("Balanced");
-  const { selectedPid, selectedUid } = useUnitContext();
+  const { selectedPid, selectedUid, units } = useUnitContext();
   const todayQ = useToday(selectedPid, selectedUid);
   const forecastQ = useForecast(selectedPid, selectedUid, 30);
   const histQ = useHistory(selectedPid, selectedUid, 365);
   const recsQ = useRecommendations(selectedPid, selectedUid);
   const leaksQ = useLeaks(selectedPid, selectedUid);
+  const unitZip =
+    units.find((u) => u.property_id === selectedPid && u.unit_id === selectedUid)
+      ?.zipcode ?? "10115";
+  const weatherQ = useWeatherForecast(unitZip, 8);
 
   const t = useMemo(
     () => todayToView(todayQ.data, forecastQ.data, mockTenantToday),
@@ -234,6 +325,9 @@ const TenantHome = () => {
         </div>
       </section>
 
+      {/* Weather forecast strip */}
+      <WeatherForecastStrip days={weatherQ.data ?? FALLBACK_WEATHER} />
+
       {/* Mode selector
       <section className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -266,8 +360,8 @@ const TenantHome = () => {
               key={r}
               onClick={() => setRange(r)}
               className={`rounded-full px-2.5 py-1 transition ${range === r
-                  ? "bg-card text-foreground shadow-soft"
-                  : "text-muted-foreground"
+                ? "bg-card text-foreground shadow-soft"
+                : "text-muted-foreground"
                 }`}
             >
               {r}
@@ -449,7 +543,7 @@ const TenantHome = () => {
         </div>
         <div className="mt-2 flex items-end gap-3">
           <div className="flex-1">
-            <div className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none">
+            <div className="text-sm leading-relaxed prose prose-sm prose-invert max-w-none text-white">
               <ReactMarkdown>{coachingTips[1].body}</ReactMarkdown>
             </div>
             <Link

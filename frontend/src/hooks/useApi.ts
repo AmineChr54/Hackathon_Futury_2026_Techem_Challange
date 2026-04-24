@@ -17,6 +17,7 @@ import type {
   TargetRequest,
   TargetResponse,
   TodayResponse,
+  WeatherDay,
   WhatIfRequest,
   WhatIfResponse,
 } from "@/lib/apiTypes";
@@ -187,5 +188,19 @@ export function useLandlordEsg(pid: number) {
     enabled: Number.isFinite(pid),
     retry: 1,
     staleTime: 60_000,
+  });
+}
+
+// ---------- Weather ----------
+
+export function useWeatherForecast(zipcode: string = "10115", days = 8) {
+  return useQuery({
+    queryKey: ["weather", zipcode, days],
+    queryFn: () =>
+      apiFetch<WeatherDay[]>(`/weather/forecast`, {
+        query: { zipcode, days },
+      }),
+    retry: 1,
+    staleTime: 60_000 * 30, // weather doesn't change every minute
   });
 }

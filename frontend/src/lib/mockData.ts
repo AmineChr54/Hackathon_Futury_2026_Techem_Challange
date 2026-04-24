@@ -82,8 +82,8 @@ export const coachingTips = [
     tone: "success" as const,
   },
   {
-    title: "Weather-smart heating",
-    body: "It's 15°C outside tonight. Lowering the heater from 3 to 2 could trim today's cost by ~12%.",
+    title: "Small Changes, Big Impact",
+    body: "Small changes make a big impact! Let's chat about how to maximize your efficiency this week.",
     tone: "tip" as const,
   },
   {
@@ -226,14 +226,14 @@ export const buildings: Array<{
   predictedClass: EnergyClass; // forecast after recommended retrofit
   predictedCostEur: number;    // predicted next-year cost
 }> = [
-  { id: "b1", name: "Linden Hof 12", city: "Berlin", units: 24, energyClass: "C", consumptionMwh: 142, costEur: 47800, co2Tons: 28, alerts: 0, efficiency: 82, predictedClass: "B", predictedCostEur: 44200 },
-  { id: "b2", name: "Eichenweg 7", city: "Frankfurt", units: 18, energyClass: "F", consumptionMwh: 198, costEur: 66400, co2Tons: 41, alerts: 2, efficiency: 48, predictedClass: "D", predictedCostEur: 52100 },
-  { id: "b3", name: "Rosenstraße 22", city: "Munich", units: 30, energyClass: "B", consumptionMwh: 156, costEur: 52100, co2Tons: 31, alerts: 0, efficiency: 88, predictedClass: "A", predictedCostEur: 48400 },
-  { id: "b4", name: "Birkenallee 5", city: "Hamburg", units: 12, energyClass: "G", consumptionMwh: 174, costEur: 58300, co2Tons: 36, alerts: 3, efficiency: 38, predictedClass: "E", predictedCostEur: 41800 },
-  { id: "b5", name: "Ahornpark 9", city: "Cologne", units: 22, energyClass: "D", consumptionMwh: 168, costEur: 56200, co2Tons: 34, alerts: 1, efficiency: 64, predictedClass: "C", predictedCostEur: 49600 },
-  { id: "b6", name: "Tannenring 3", city: "Stuttgart", units: 16, energyClass: "E", consumptionMwh: 152, costEur: 50800, co2Tons: 32, alerts: 0, efficiency: 56, predictedClass: "D", predictedCostEur: 45200 },
-  { id: "b7", name: "Buchenhof 14", city: "Düsseldorf", units: 28, energyClass: "A", consumptionMwh: 118, costEur: 39400, co2Tons: 22, alerts: 0, efficiency: 92, predictedClass: "A", predictedCostEur: 38100 },
-];
+    { id: "b1", name: "Linden Hof 12", city: "Berlin", units: 24, energyClass: "C", consumptionMwh: 142, costEur: 47800, co2Tons: 28, alerts: 0, efficiency: 82, predictedClass: "B", predictedCostEur: 44200 },
+    { id: "b2", name: "Eichenweg 7", city: "Frankfurt", units: 18, energyClass: "F", consumptionMwh: 198, costEur: 66400, co2Tons: 41, alerts: 2, efficiency: 48, predictedClass: "D", predictedCostEur: 52100 },
+    { id: "b3", name: "Rosenstraße 22", city: "Munich", units: 30, energyClass: "B", consumptionMwh: 156, costEur: 52100, co2Tons: 31, alerts: 0, efficiency: 88, predictedClass: "A", predictedCostEur: 48400 },
+    { id: "b4", name: "Birkenallee 5", city: "Hamburg", units: 12, energyClass: "G", consumptionMwh: 174, costEur: 58300, co2Tons: 36, alerts: 3, efficiency: 38, predictedClass: "E", predictedCostEur: 41800 },
+    { id: "b5", name: "Ahornpark 9", city: "Cologne", units: 22, energyClass: "D", consumptionMwh: 168, costEur: 56200, co2Tons: 34, alerts: 1, efficiency: 64, predictedClass: "C", predictedCostEur: 49600 },
+    { id: "b6", name: "Tannenring 3", city: "Stuttgart", units: 16, energyClass: "E", consumptionMwh: 152, costEur: 50800, co2Tons: 32, alerts: 0, efficiency: 56, predictedClass: "D", predictedCostEur: 45200 },
+    { id: "b7", name: "Buchenhof 14", city: "Düsseldorf", units: 28, energyClass: "A", consumptionMwh: 118, costEur: 39400, co2Tons: 22, alerts: 0, efficiency: 92, predictedClass: "A", predictedCostEur: 38100 },
+  ];
 
 // Building trend with actuals + 2 forecast months
 export const buildingTrend = [

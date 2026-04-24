@@ -1,6 +1,7 @@
 """Central configuration for paths and runtime knobs."""
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -33,6 +34,11 @@ CV_HORIZON_DAYS = 30
 EVAL_HORIZONS_DAYS = (1, 7, 14, 30)
 
 QUANTILES = (0.1, 0.5, 0.9)
+
+# Pinned simulation "today". Dataset ends 2020-12-30 (Wednesday).
+# All forecasts, weather widgets, and tenant views anchor here so the
+# demo stays coherent regardless of wall-clock date.
+SIM_TODAY: date = date(2020, 12, 30)
 
 # Hierarchical reconciliation method. "proportions" is bottom-up share
 # disaggregation (what we use today). "mint" routes through

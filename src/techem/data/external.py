@@ -7,13 +7,13 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
 
-from techem.config import DATA_EXTERNAL
+from techem.config import DATA_EXTERNAL, SIM_TODAY
 from techem.serve.resilience import resilient
 
 log = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ def fetch_weather_daily(
 
 def weather_forecast(zipcode: str, horizon_days: int = 14) -> pd.DataFrame:
     g = geocode_zipcode(zipcode)
-    today = date.today()
+    today = SIM_TODAY
     rows = fetch_weather_daily(
         g["lat"], g["lon"],
         (today - timedelta(days=1)).isoformat(),
@@ -80,6 +80,7 @@ def weather_forecast(zipcode: str, horizon_days: int = 14) -> pd.DataFrame:
     )
     df = pd.DataFrame(rows)
     df["date"] = pd.to_datetime(df["date"])
+    df = df[df["date"] >= pd.Timestamp(today)].reset_index(drop=True)
     return df
 
 
@@ -91,10 +92,10 @@ def ensure_mock_weather(n_days: int = 14) -> None:
     """
     if MOCK_WEATHER.exists():
         return
-    base = date.today()
+    base = SIM_TODAY
     payload = [
-        {"date": (base + timedelta(days=i)).isoformat(), "tavg": 8.0 - 0.3 * i}
-        for i in range(-7, n_days + 1)
+        {"date": (base + timedelta(days=i)).isoformat(), "tavg": 2.0 + 0.2 * i}
+        for i in range(0, n_days + 1)
     ]
     MOCK_WEATHER.write_text(json.dumps(payload), encoding="utf-8")
     log.info("wrote fallback %s", MOCK_WEATHER)

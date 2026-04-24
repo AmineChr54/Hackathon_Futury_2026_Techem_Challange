@@ -204,3 +204,11 @@ export type LandlordEsg = {
   };
   narrative: string | null;
 };
+
+export type WeatherDay = {
+  date: string;
+  day: string;
+  high: number;
+  low: number;
+  condition: "sunny" | "partly_cloudy" | "cloudy" | "rainy" | "snowy";
+};

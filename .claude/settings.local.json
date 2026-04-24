@@ -35,7 +35,8 @@
       "Bash(curl -sS \"http://127.0.0.1:8000/forecast/unit/1/1?horizon_days=30\")",
       "Bash(curl -sS -X POST \"http://127.0.0.1:8000/__never__\")",
       "Bash(taskkill /F /IM python.exe)",
-      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force\")"
+      "Bash(powershell -Command \"Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(.venv/Scripts/python.exe)"
     ]
   }
 }

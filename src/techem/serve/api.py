@@ -20,7 +20,7 @@ through Meteostat (resilient — falls back to mock).
 """
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
@@ -37,6 +37,7 @@ from techem.config import (
     DEFAULT_PRICE_EUR_PER_KWH,
     MODELS_DIR,
     ROOM_SENSITIVITIES,
+    SIM_TODAY,
     UNIT_DAILY_PARQUET,
 )
 from techem.data.external import ensure_mock_geocode, ensure_mock_weather, weather_forecast
@@ -292,6 +293,64 @@ def health() -> dict:
 def list_units() -> list[dict]:
     u = _unit_daily()[["property_id", "unit_id", "source", "city", "zipcode"]].drop_duplicates()
     return u.to_dict(orient="records")
+
+
+@app.get("/weather/forecast")
+def weather_forecast_endpoint(
+    zipcode: str = Query("10115"),
+    days: int = Query(8, ge=1, le=14),
+) -> list[dict]:
+    """8-day weather forecast for the tenant home widget."""
+    import math
+    from datetime import datetime as dt
+
+    WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+    try:
+        wx = weather_forecast(zipcode, horizon_days=days + 2)
+    except Exception:
+        # Return synthetic fallback so the widget still renders.
+        today = SIM_TODAY
+        return [
+            {
+                "date": (today + timedelta(days=i)).isoformat(),
+                "day": WEEKDAYS[(today + timedelta(days=i)).weekday()],
+                "high": round(18 - 0.3 * i, 0),
+                "low": round(5 + 0.2 * i, 0),
+                "condition": "partly_cloudy" if i % 3 else "sunny",
+            }
+            for i in range(days)
+        ]
+
+    out: list[dict] = []
+    for _, row in wx.head(days).iterrows():
+        d = pd.to_datetime(row["date"])
+        tavg = float(row["tavg"]) if pd.notna(row["tavg"]) else 10.0
+        # Derive approximate high/low from daily average.
+        high = round(tavg + 4.0, 0)
+        low = round(tavg - 4.0, 0)
+
+        # Classify into simple conditions based on temperature.
+        if tavg >= 22:
+            cond = "sunny"
+        elif tavg >= 15:
+            cond = "partly_cloudy"
+        elif tavg >= 8:
+            cond = "cloudy"
+        elif tavg >= 2:
+            cond = "rainy"
+        else:
+            cond = "snowy"
+
+        out.append({
+            "date": d.date().isoformat(),
+            "day": WEEKDAYS[d.weekday()],
+            "high": int(high),
+            "low": int(low),
+            "condition": cond,
+        })
+
+    return out
 
 
 @app.get("/forecast/unit/{pid}/{uid}", response_model=ForecastResponse)
